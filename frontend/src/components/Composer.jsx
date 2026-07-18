@@ -6,13 +6,45 @@ export default function Composer({ onSend, disabled }) {
   const [listening, setListening] = useState(false)
   const [attachment, setAttachment] = useState(null)
   const fileRef = useRef(null)
+  const recognitionRef = useRef(null)
 
-  // TODO: backend — wire to speech-to-text
-  function onVoiceInput() {
-    setListening((v) => !v)
+  function startVoice() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Speech recognition is not supported in this browser. Please use Chrome or Edge.')
+      return
+    }
+
+    if (listening && recognitionRef.current) {
+      recognitionRef.current.stop()
+      setListening(false)
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'en-US'
+    recognition.interimResults = false
+    recognition.continuous = false
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript
+      setText((prev) => prev ? prev + ' ' + transcript : transcript)
+      setListening(false)
+    }
+
+    recognition.onerror = () => {
+      setListening(false)
+    }
+
+    recognition.onend = () => {
+      setListening(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setListening(true)
   }
 
-  // TODO: backend — POST /ingest with the file
   function onUpload(file) {
     setAttachment(file)
   }
@@ -26,15 +58,16 @@ export default function Composer({ onSend, disabled }) {
   }
 
   return (
-    <div className="shrink-0 border-t border-neutral-200 bg-white px-4 py-3">
+    <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-3">
+      {/* Attachment chip */}
       {attachment && (
         <div className="mb-2 flex">
-          <span className="flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 py-1 pr-1.5 pl-2.5 text-xs text-neutral-600">
+          <span className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 py-1 pr-1.5 pl-2.5 text-xs text-slate-600">
             <FileText size={12} strokeWidth={1.75} />
             {attachment.name}
             <button
               onClick={() => setAttachment(null)}
-              className="rounded-full p-0.5 hover:bg-neutral-200"
+              className="rounded-full p-0.5 hover:bg-slate-200"
               aria-label="Remove attachment"
             >
               <X size={12} />
@@ -43,30 +76,33 @@ export default function Composer({ onSend, disabled }) {
         </div>
       )}
 
+      {/* Input row */}
       <div className="flex items-center gap-2">
+        {/* Voice button */}
         <button
-          onClick={onVoiceInput}
+          onClick={startVoice}
           aria-label="Voice input"
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border ${
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all ${
             listening
-              ? 'border-emerald-600 bg-emerald-600 text-white'
-              : 'border-neutral-300 text-neutral-500 hover:bg-neutral-50'
+              ? 'border-blue-500 bg-blue-600 text-white shadow-md shadow-blue-600/20'
+              : 'border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50'
           }`}
         >
           <Mic size={16} strokeWidth={1.75} className={listening ? 'animate-pulse' : ''} />
         </button>
 
+        {/* Attach button */}
         <button
           onClick={() => fileRef.current?.click()}
           aria-label="Attach file"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-300 text-neutral-500 hover:bg-neutral-50"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50 transition-colors"
         >
           <Paperclip size={16} strokeWidth={1.75} />
         </button>
         <input
           ref={fileRef}
           type="file"
-          accept=".jpg,.jpeg,.png,.csv,.xlsx"
+          accept=".csv,.xlsx,.xls"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0]
@@ -75,23 +111,40 @@ export default function Composer({ onSend, disabled }) {
           }}
         />
 
+        {/* Text input */}
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
           placeholder="Ask about your business..."
-          className="h-9 flex-1 rounded-full border border-neutral-300 px-4 text-[15px] text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-400 focus:outline-none"
+          className="h-9 flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all"
         />
 
+        {/* Send button */}
         <button
           onClick={submit}
           disabled={disabled || !text.trim()}
           aria-label="Send"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-30"
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all ${
+            text.trim()
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20 hover:bg-blue-700'
+              : 'bg-slate-100 text-slate-300 cursor-not-allowed'
+          }`}
         >
           <ArrowUp size={16} strokeWidth={2} />
         </button>
       </div>
+
+      {/* Voice listening indicator */}
+      {listening && (
+        <div className="mt-2 flex items-center gap-2 text-xs text-blue-600">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
+          </span>
+          Listening... speak now
+        </div>
+      )}
     </div>
   )
 }
