@@ -4,5 +4,10 @@ dist/
 **/.env
 .env.local
 .claude/settings.local.json
+venv/
 __pycache__/
 *.py[cod]
+*.pyc
+.kaggle/
+.idea/
+.vscode/
