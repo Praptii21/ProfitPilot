@@ -1,19 +1,28 @@
+import os
+import io
+import json
 import pandas as pd
 import numpy as np
-import json
-import io
+from dotenv import load_dotenv
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+
 from sklearn.ensemble import RandomForestRegressor, IsolationForest
 from sklearn.preprocessing import StandardScaler
 
-# Google GenAI SDK imports (Using current 2026 standard practices)
 from google import genai
 from google.genai import types
 
-app = FastAPI(title="ProfitPilot Core ML & Vision Engine")
+from app.gemma_agent import get_gemma_agent
+from app.rag_engine import get_rag_engine
+
+# Load environment variables
+load_dotenv()
+
+app = FastAPI(title="ProfitPilot Core ML & Vision Engine + RAG Chat")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,11 +32,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize the GenAI Client (Make sure GEMMA_API_KEY or GEMINI_API_KEY is in your env variables)
-# If you are using a local Gemma instance, adjust the client initialization accordingly.
+# Initialize the GenAI Client for the ML engine's OCR
 client = genai.Client()
 
 GLOBAL_DATA = {"df": None}
+
+# Initialize singletons on startup for RAG
+@app.on_event("startup")
+async def startup_event():
+    print("Starting ProfitPilot Backend...")
+    # This pre-loads the FAISS index and the Gemma model so requests are fast
+    get_rag_engine()
+    get_gemma_agent()
+
 
 # --- SCHEMA DEFINITIONS FOR GEMMA VISION STRUCTURED OUTPUT ---
 class ExtractedTransaction(BaseModel):
@@ -47,6 +64,16 @@ class SimulationPayload(BaseModel):
     price_change_pct: float
     discount_change_pct: float
     payment_terms_days: int
+
+# --- Pydantic Models for /chat ---
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: Optional[List[ChatMessage]] = []
+
 
 # --- HELPER FUNCTIONS ---
 def calculate_health_score(margin: float, late_ratio: float, concentration: float) -> int:
@@ -175,6 +202,21 @@ def run_ml_analysis(df: pd.DataFrame) -> dict:
     }
 
 # --- ENDPOINTS ---
+
+@app.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    """
+    Handles chat messages (including voice transcriptions) from the frontend.
+    Runs the message through RAG retrieval and the Gemma agent.
+    """
+    agent = get_gemma_agent()
+    
+    try:
+        response_data = agent.generate_response(request.message, request.history)
+        return response_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/analyze")
 async def analyze_data(file: UploadFile = File(...)):
@@ -307,3 +349,7 @@ async def get_profit_summary():
         "margin": float((df['profit'].sum() / df['revenue'].sum()) * 100),
         "top_product": str(top_product)
     }
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "profit-pilot-backend"}
