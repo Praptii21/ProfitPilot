@@ -5,52 +5,47 @@ import {
   Percent,
   Activity,
   TrendingDown,
+  LineChart as LineChartIcon
 } from 'lucide-react'
 
 export default function DashboardCards({ data }) {
+  if (!data) return null;
+
   const cards = [
     {
-      title: 'Total Revenue',
-      value: data?.revenue?.value ?? '—',
-      change: data?.revenue?.change ?? '',
-      changeType: data?.revenue?.changeType ?? 'positive',
+      title: data.revenue?.title ?? 'Total Revenue',
+      value: data.revenue?.value ?? '—',
+      change: data.revenue?.change ?? '',
+      changeType: data.revenue?.changeType ?? 'positive',
       icon: DollarSign,
-      chartData: data?.revenue?.trend ?? [],
-      prefix: '₹',
     },
     {
-      title: 'Total Profit',
-      value: data?.profit?.value ?? '—',
-      change: data?.profit?.change ?? '',
-      changeType: data?.profit?.changeType ?? 'positive',
+      title: data.profit?.title ?? 'Net Profit',
+      value: data.profit?.value ?? '—',
+      change: data.profit?.change ?? '',
+      changeType: data.profit?.changeType ?? 'positive',
       icon: TrendingUp,
-      chartData: data?.profit?.trend ?? [],
-      prefix: '₹',
     },
     {
-      title: 'Profit Margin',
-      value: data?.margin?.value ?? '—',
-      change: data?.margin?.change ?? '',
-      changeType: data?.margin?.changeType ?? 'positive',
+      title: data.margin?.title ?? 'Profit Margin',
+      value: data.margin?.value ?? '—',
+      change: data.margin?.change ?? '',
+      changeType: data.margin?.changeType ?? 'positive',
       icon: Percent,
-      chartData: data?.margin?.trend ?? [],
     },
     {
-      title: 'Health Score',
-      value: data?.healthScore?.value ?? '—',
-      change: data?.healthScore?.change ?? '',
-      changeType: data?.healthScore?.changeType ?? 'positive',
-      icon: Activity,
-      chartData: data?.healthScore?.trend ?? [],
-    },
-    {
-      title: 'Profit Leakage',
-      value: data?.leakage?.value ?? '—',
-      change: data?.leakage?.change ?? '',
-      changeType: data?.leakage?.changeType ?? 'negative',
+      title: data.leakage?.title ?? 'Est. Profit Leakage',
+      value: data.leakage?.value ?? '—',
+      change: data.leakage?.change ?? '',
+      changeType: data.leakage?.changeType ?? 'negative',
       icon: TrendingDown,
-      chartData: data?.leakage?.trend ?? [],
-      prefix: '₹',
+    },
+    {
+      title: data.forecast?.title ?? '3-Month Forecast',
+      value: data.forecast?.value ?? '—',
+      change: data.forecast?.change ?? '',
+      changeType: data.forecast?.changeType ?? 'neutral',
+      icon: LineChartIcon,
     },
   ]
 
@@ -61,7 +56,7 @@ export default function DashboardCards({ data }) {
       }}
     >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-300">Business Overview</h2>
+        <h2 className="text-sm font-semibold text-slate-300">Business Snapshot</h2>
         <span className="text-xs text-slate-500">Last updated just now</span>
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">

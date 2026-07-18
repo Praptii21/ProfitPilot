@@ -18,19 +18,15 @@ export async function sendMessage(text, history) {
 
 // TODO: backend — GET /dashboard
 export function getDashboardData() {
-  if (USE_MOCKS) return mockApi.getDashboardData()
-  // return fetch('/dashboard').then(r => r.json())
+  // Always return mock data for now because the backend needs 
+  // file upload (/analyze) to be wired up first!
+  return mockApi.getDashboardData()
 }
 
 // TODO: backend — POST /simulate
 export async function runSimulation(params) {
-  if (USE_MOCKS) return mockApi.runSimulation(params)
-  const res = await fetch('/simulate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
-  })
-  return res.json()
+  // Same here, use mocks until ML integration is fully complete on the frontend
+  return mockApi.runSimulation(params)
 }
 
 export { greeting, SEED_SUGGESTIONS } from '../mocks/api.js'

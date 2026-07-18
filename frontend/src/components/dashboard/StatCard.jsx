@@ -26,7 +26,9 @@ export default function StatCard({ title, value, change, changeType, icon: Icon,
           <p className="text-2xl font-bold tracking-tight text-white">
             {prefix}{value}
           </p>
-          <p className={`mt-1 text-xs font-medium ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+          <p className={`mt-1 text-xs font-medium ${
+            isPositive ? 'text-emerald-400' : changeType === 'negative' ? 'text-red-400' : 'text-blue-400'
+          }`}>
             {change}
           </p>
         </div>

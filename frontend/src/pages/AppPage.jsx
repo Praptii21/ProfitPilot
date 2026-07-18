@@ -6,7 +6,6 @@ import DashboardCards from '../components/dashboard/DashboardCards.jsx'
 import ChartsGrid from '../components/dashboard/ChartsGrid.jsx'
 import RecommendationCard from '../components/dashboard/RecommendationCard.jsx'
 import WhatIfSimulator from '../components/dashboard/WhatIfSimulator.jsx'
-import BusinessReport from '../components/dashboard/BusinessReport.jsx'
 import { sendMessage, greeting, getDashboardData, runSimulation } from '../api/client.js'
 
 export default function AppPage() {
@@ -87,8 +86,13 @@ export default function AppPage() {
             {/* What-if Simulator */}
             <WhatIfSimulator onSimulate={handleSimulate} />
 
-            {/* Business Report */}
-            <BusinessReport report={dashboardData.report} />
+            {/* Download Action */}
+            <div className="pt-4 flex justify-center">
+              <button className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                Download Business Report (PDF)
+              </button>
+            </div>
           </div>
         </motion.div>
 
