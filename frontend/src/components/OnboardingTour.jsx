@@ -101,7 +101,6 @@ export default function OnboardingTour() {
 
   const stepInfo = TOUR_STEPS[currentStep]
 
-  // Calculate tooltip placement
   const getTooltipStyle = () => {
     if (!coords) {
       return {
@@ -115,42 +114,41 @@ export default function OnboardingTour() {
 
     const margin = 16
     const tooltipWidth = 320
-    const tooltipHeight = 200
+    const tooltipHeight = 180
+
+    let left = 0
+    let top = 0
 
     switch (stepInfo.position) {
       case 'bottom':
-        return {
-          position: 'absolute',
-          top: coords.top + coords.height + margin,
-          left: coords.left + (coords.width / 2) - (tooltipWidth / 2),
-          width: tooltipWidth,
-          zIndex: 50
-        }
+        top = coords.top + coords.height + margin
+        left = coords.left + (coords.width / 2) - (tooltipWidth / 2)
+        break
       case 'left':
-        return {
-          position: 'absolute',
-          top: coords.top + (coords.height / 2) - (tooltipHeight / 2),
-          left: coords.left - tooltipWidth - margin,
-          width: tooltipWidth,
-          zIndex: 50
-        }
+        top = coords.top + (coords.height / 2) - (tooltipHeight / 2)
+        left = coords.left - tooltipWidth - margin
+        break
       case 'right':
-        return {
-          position: 'absolute',
-          top: coords.top + (coords.height / 2) - (tooltipHeight / 2),
-          left: coords.left + coords.width + margin,
-          width: tooltipWidth,
-          zIndex: 50
-        }
+        top = coords.top + (coords.height / 2) - (tooltipHeight / 2)
+        left = coords.left + coords.width + margin
+        break
       case 'top':
       default:
-        return {
-          position: 'absolute',
-          top: coords.top - tooltipHeight - margin,
-          left: coords.left + (coords.width / 2) - (tooltipWidth / 2),
-          width: tooltipWidth,
-          zIndex: 50
-        }
+        top = coords.top - tooltipHeight - margin
+        left = coords.left + (coords.width / 2) - (tooltipWidth / 2)
+        break
+    }
+
+    // Bound coordinates to prevent tooltips from getting clipped or rendered offscreen
+    left = Math.max(margin, Math.min(window.innerWidth - tooltipWidth - margin, left))
+    top = Math.max(margin, Math.min(window.innerHeight - tooltipHeight - margin, top))
+
+    return {
+      position: 'absolute',
+      top,
+      left,
+      width: tooltipWidth,
+      zIndex: 50
     }
   }
 
