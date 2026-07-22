@@ -82,10 +82,19 @@ def calculate_health_score(margin: float, late_ratio: float, concentration: floa
     score = 50 + (margin * 2) - (late_ratio * 30) - (concentration * 20)
     return int(np.clip(score, 10, 100))
 
-def run_ml_analysis(df: pd.DataFrame) -> dict:
+def run_ml_analysis(df: pd.DataFrame, merge: bool = False) -> dict:
     """Core ML & BI logic extracted into a reusable function so both /analyze and /extract can use it."""
     # Standardize column names to prevent KeyErrors from spaces or capitals
     df.columns = df.columns.str.strip().str.lower()
+    
+    # Merge if requested and existing data exists
+    if merge and GLOBAL_DATA.get("df") is not None:
+        try:
+            # Re-read global dataframe and concatenate
+            existing_df = GLOBAL_DATA["df"].copy()
+            df = pd.concat([existing_df, df], ignore_index=True)
+        except Exception as e:
+            print(f"Error merging dataframes: {e}. Overwriting instead.")
     
     # Ensure required columns exist to avoid cryptic Pandas errors later
     required = ['revenue', 'cost']
@@ -254,7 +263,7 @@ async def chat_endpoint(request: ChatRequest):
 
 
 @app.post("/analyze")
-async def analyze_data(files: List[UploadFile] = File(...)):
+async def analyze_data(files: List[UploadFile] = File(...), merge: bool = False):
     """Standard CSV batch ingest portal (supports multiple files)."""
     dfs = []
     for file in files:
@@ -266,10 +275,10 @@ async def analyze_data(files: List[UploadFile] = File(...)):
         raise HTTPException(status_code=400, detail="No files uploaded.")
         
     combined_df = pd.concat(dfs, ignore_index=True)
-    return run_ml_analysis(combined_df)
+    return run_ml_analysis(combined_df, merge=merge)
 
 @app.post("/extract")
-async def extract_and_analyze_image(file: UploadFile = File(...)):
+async def extract_and_analyze_image(file: UploadFile = File(...), merge: bool = False):
     """
     Multimodal Document Entryway.
     Accepts an invoice/ledger image, leverages Gemma Vision to pull tabular data,
@@ -321,7 +330,7 @@ async def extract_and_analyze_image(file: UploadFile = File(...)):
         df = pd.DataFrame(transactions_list)
         
         # Pipe it into the engine automatically
-        analysis_results = run_ml_analysis(df)
+        analysis_results = run_ml_analysis(df, merge=merge)
         
         # Return both the raw extraction AND the final analysis so Member 3 can build beautiful UIs
         return {

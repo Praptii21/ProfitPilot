@@ -36,40 +36,59 @@ export async function uploadData(fileOrFiles) {
   const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles]
   if (files.length === 0) throw new Error("No files provided")
 
-  // 1. Determine if it's an image (for Gemma Vision OCR) or CSVs
-  const isImage = files[0].type.startsWith('image/')
-  const endpoint = isImage ? 'http://127.0.0.1:8000/extract' : 'http://127.0.0.1:8000/analyze'
+  const images = files.filter(f => f.type.startsWith('image/'))
+  const csvs = files.filter(f => !f.type.startsWith('image/'))
 
-  const formData = new FormData()
-  if (isImage) {
-    formData.append('file', files[0])
-  } else {
-    // For /analyze which now accepts a list of files
-    files.forEach(file => {
+  let lastAnalysis = null
+  let isFirst = true
+
+  // 1. Process CSV files together
+  if (csvs.length > 0) {
+    const formData = new FormData()
+    csvs.forEach(file => {
       formData.append('files', file)
     })
+
+    const response = await fetch(`http://127.0.0.1:8000/analyze?merge=${!isFirst}`, {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      const err = await response.text()
+      throw new Error(err)
+    }
+    
+    lastAnalysis = await response.json()
+    isFirst = false
   }
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    body: formData
-  })
-  
-  if (!response.ok) {
-    const err = await response.text()
-    throw new Error(err)
-  }
-  
-  const rawData = await response.json()
-  // The /extract endpoint nests the analysis inside `rawData.analysis`, while /analyze returns it directly
-  const analysis = isImage ? rawData.analysis : rawData
+  // 2. Process image files sequentially
+  for (const image of images) {
+    const formData = new FormData()
+    formData.append('file', image)
 
-  // 2. Fetch the updated dashboard aggregates
+    const response = await fetch(`http://127.0.0.1:8000/extract?merge=${!isFirst}`, {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      const err = await response.text()
+      throw new Error(err)
+    }
+    
+    const rawData = await response.json()
+    lastAnalysis = rawData.analysis
+    isFirst = false
+  }
+
+  // 3. Fetch the updated dashboard aggregates
   const dashRes = await fetch('http://127.0.0.1:8000/dashboard')
   const dash = await dashRes.json()
 
-  // 3. Map backend data to UI shape
-  return transformBackendToUI(analysis, dash)
+  // 4. Map backend data to UI shape
+  return transformBackendToUI(lastAnalysis, dash)
 }
 
 function transformBackendToUI(analysis, dash) {
