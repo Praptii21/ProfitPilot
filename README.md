@@ -14,11 +14,12 @@ ProfitPilot is an artificial intelligence-powered financial intelligence platfor
 
 * **Intelligent Document Ingestion (OCR)**: Automatically processes photographs or scans of invoices and handwritten ledger logs to isolate tabular transaction parameters (dates, customers, products, revenue, costs, discounts, payment cycles) using multimodal vision analysis.
 * **Multi-File Sequential Merging**: Allows uploading mixed batches of CSV files and images simultaneously. The ingestion pipeline normalizes schemas and combines the rows into a single target dataset for holistic analysis.
-* **Automated Diagnostics**: Runs statistical modeling to surface profit leakages, customer concentration risks, and payment delays immediately upon ingestion.
-* **Conversational Context Memory (RAG)**: An integrated advisor chat interface that remembers active business goals, margins, and leakages, retrieving semantic grounding data to answer queries contextually.
+* **Goal-Aware Recommendations**: Replaces generic advice lists with custom-tailored strategy actions and badges keyed specifically to the user's active business targets.
+* **Retrieval-Augmented Generation (RAG)**: Connects conversations to a localized financial knowledge base via vector search, grounding the business advisor in verified industry best practices.
+* **Active Business Goal Targets**: Lets users specify deadlines, target values, and current progress metrics directly, updating a visual progress bar.
+* **Conversational Chat Sessions**: Preserves and loads historical messages and the dashboard data associated with each chat session across refreshes.
+* **Interactive Onboarding Walkthrough**: Guides first-time users through the dashboard layout using a backdrop dimming spotlight effect to focus on primary modules.
 * **Interactive What-If Simulation**: Enables simulating the impact of price adjustments and discount policy changes on revenue and profit margins using real-time sliders.
-* **Flexible Panel Resizing**: A draggable divider separates the analytical dashboard and the conversational assistant, allowing users to customize their visual workspaces.
-* **Structured PDF Reports**: Generates formal executive business summaries detailing KPIs and strategic action points via print styles.
 
 ---
 
