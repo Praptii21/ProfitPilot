@@ -74,6 +74,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     history: Optional[List[ChatMessage]] = []
+    goals: Optional[List[dict]] = []
 
 
 # --- HELPER FUNCTIONS ---
@@ -237,6 +238,14 @@ async def chat_endpoint(request: ChatRequest):
         
         ml_context = f"Live ML Context:\n- Revenue: ₹{metrics.get('revenue', 0):,.2f}\n- Margin: {metrics.get('profit_margin', 0)}%\n- Health Score: {metrics.get('health_score', 0)}/100\n- Profit Leaks Detected: {leak_str}"
         
+    if request.goals:
+        goal_strs = []
+        for g in request.goals:
+            val_str = f" (target: {g['targetValue']}, current: {g['currentValue']})" if g.get('targetValue') is not None else ""
+            goal_strs.append(f"- {g['title']} by {g['deadline']}{val_str}")
+        goals_context = "\nActive User Goals:\n" + "\n".join(goal_strs)
+        ml_context += goals_context
+        
     try:
         response_data = agent.generate_response(request.message, request.history, ml_context)
         return response_data
@@ -245,10 +254,19 @@ async def chat_endpoint(request: ChatRequest):
 
 
 @app.post("/analyze")
-async def analyze_data(file: UploadFile = File(...)):
-    """Standard CSV batch ingest portal."""
-    df = pd.read_csv(file.file, sep=None, engine='python')
-    return run_ml_analysis(df)
+async def analyze_data(files: List[UploadFile] = File(...)):
+    """Standard CSV batch ingest portal (supports multiple files)."""
+    dfs = []
+    for file in files:
+        # Read the file
+        df = pd.read_csv(file.file, sep=None, engine='python')
+        dfs.append(df)
+    
+    if not dfs:
+        raise HTTPException(status_code=400, detail="No files uploaded.")
+        
+    combined_df = pd.concat(dfs, ignore_index=True)
+    return run_ml_analysis(combined_df)
 
 @app.post("/extract")
 async def extract_and_analyze_image(file: UploadFile = File(...)):

@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import TopBar from '../components/TopBar.jsx'
 import ChatPanel from '../components/ChatPanel.jsx'
@@ -6,6 +7,7 @@ import ChartsGrid from '../components/dashboard/ChartsGrid.jsx'
 import RecommendationCard from '../components/dashboard/RecommendationCard.jsx'
 import WhatIfSimulator from '../components/dashboard/WhatIfSimulator.jsx'
 import { sendMessage, runSimulation, uploadData, SEED_SUGGESTIONS } from '../api/client.js'
+import OnboardingTour from '../components/OnboardingTour.jsx'
 
 export default function AppPage({
   messages, setMessages,
@@ -13,6 +15,11 @@ export default function AppPage({
   chatExpanded, setChatExpanded,
   dashboardData, setDashboardData,
   isUploading, setIsUploading,
+  sessions,
+  currentSessionId,
+  onLoadSession,
+  onNewSession,
+  onDeleteSession,
 }) {
 
   async function handleSend(text, attachment) {
@@ -36,36 +43,42 @@ export default function AppPage({
     }
   }
 
-  async function handleUpload(file) {
-    console.log('uploading:', file.name)
+  async function handleUpload(fileOrFiles) {
+    const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles]
+    if (files.length === 0) return
+
+    console.log('uploading:', files.map(f => f.name).join(', '))
     setIsUploading(true)
 
-    // Generate local URL for preview if image
-    let imageUrl = null
-    if (file.type.startsWith('image/')) {
-      imageUrl = URL.createObjectURL(file)
-    }
+    // Generate local URLs for preview for images
+    const fileMessages = files.map(file => {
+      let imageUrl = null
+      if (file.type.startsWith('image/')) {
+        imageUrl = URL.createObjectURL(file)
+      }
+      return {
+        role: 'user',
+        content: `Uploaded file: ${file.name}`,
+        imageUrl
+      }
+    })
 
-    setMessages((prev) => [...prev, {
-      role: 'user',
-      content: `Uploaded file: ${file.name}`,
-      imageUrl
-    }])
+    setMessages((prev) => [...prev, ...fileMessages])
     setThinking(true)
 
     try {
-      const liveData = await uploadData(file)
+      const liveData = await uploadData(files)
       setDashboardData(liveData)
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        content: 'I have successfully extracted the data from your document and updated the dashboard. How can I help you analyze it?',
+        content: `I have successfully extracted the data from your ${files.length > 1 ? 'documents' : 'document'} and updated the dashboard. How can I help you analyze it?`,
         suggestions: SEED_SUGGESTIONS
       }])
     } catch (err) {
       console.error('Failed to analyze ledger:', err)
       setMessages((prev) => [...prev, {
         role: 'assistant',
-        content: "I encountered an error trying to process that document. Please ensure it is a clear image containing invoice data or a valid CSV."
+        content: `I encountered an error trying to process the uploaded ${files.length > 1 ? 'documents' : 'document'}. Please ensure they are clear images containing invoice data or valid CSVs.`
       }])
       alert('Error analyzing the ledger. Check the backend connection.')
     } finally {
@@ -99,17 +112,47 @@ export default function AppPage({
     }
   }
 
-  // Dynamic widths for expand/collapse
-  const leftWidth = chatExpanded ? '30%' : '55%'
-  const rightWidth = chatExpanded ? '70%' : '45%'
+  const containerRef = useRef(null)
+  const [leftWidthPercent, setLeftWidthPercent] = useState(55)
+
+  // Handle drag resizing
+  const handleMouseDown = (e) => {
+    e.preventDefault()
+    const handleMouseMove = (moveEvent) => {
+      if (!containerRef.current) return
+      const containerRect = containerRef.current.getBoundingClientRect()
+      const newLeftWidth = ((moveEvent.clientX - containerRect.left) / containerRect.width) * 100
+      setLeftWidthPercent(Math.min(80, Math.max(20, newLeftWidth)))
+    }
+    
+    const handleMouseUp = () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+  }
+
+  // Handle expand toggle
+  const handleToggleExpand = () => {
+    if (chatExpanded) {
+      setLeftWidthPercent(55)
+      setChatExpanded(false)
+    } else {
+      setLeftWidthPercent(30)
+      setChatExpanded(true)
+    }
+  }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="flex h-screen flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative">
+      <OnboardingTour />
       <div>
         <TopBar onUpload={handleUpload} isUploading={isUploading} />
       </div>
 
-      <div className="flex min-h-0 flex-1 relative">
+      <div ref={containerRef} className="flex min-h-0 flex-1 relative select-none">
         
         {isUploading && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/60 dark:bg-slate-950/60 backdrop-blur-sm">
@@ -119,10 +162,9 @@ export default function AppPage({
         )}
 
         {/* LEFT — Dashboard (scrollable) */}
-        <motion.div
-          animate={{ width: leftWidth }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="min-h-0 overflow-y-auto"
+        <div
+          style={{ width: `${leftWidthPercent}%` }}
+          className="min-h-0 overflow-y-auto select-text"
         >
           <div className="space-y-5 p-5">
             {/* KPI Cards */}
@@ -132,7 +174,7 @@ export default function AppPage({
             <ChartsGrid chartData={dashboardData.charts} />
 
             {/* Recommendations */}
-            <div>
+            <div id="tour-recommendations">
               <h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
                 Recommendations
               </h2>
@@ -160,22 +202,35 @@ export default function AppPage({
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
+
+        {/* DRAG HANDLE SLIDER */}
+        <div
+          onMouseDown={handleMouseDown}
+          className="w-1.5 hover:w-2 bg-slate-200 dark:bg-slate-800 hover:bg-indigo-500 dark:hover:bg-indigo-500 cursor-col-resize transition-all duration-150 z-30 shrink-0 self-stretch relative flex items-center justify-center group"
+        >
+          <div className="w-0.5 h-8 rounded bg-slate-400 dark:bg-slate-600 group-hover:bg-indigo-200 transition-colors pointer-events-none" />
+        </div>
 
         {/* RIGHT — Chat (resizable) */}
-        <motion.div
-          animate={{ width: rightWidth }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          className="min-h-0"
+        <div
+          style={{ width: `${100 - leftWidthPercent}%` }}
+          className="min-h-0 select-text"
+          id="tour-chat"
         >
           <ChatPanel
             messages={messages}
             thinking={thinking}
             onSend={handleSend}
             expanded={chatExpanded}
-            onToggleExpand={() => setChatExpanded(!chatExpanded)}
+            onToggleExpand={handleToggleExpand}
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+            onLoadSession={onLoadSession}
+            onNewSession={onNewSession}
+            onDeleteSession={onDeleteSession}
           />
-        </motion.div>
+        </div>
       </div>
     </div>
   )

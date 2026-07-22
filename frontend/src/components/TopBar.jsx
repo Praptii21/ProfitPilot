@@ -48,6 +48,7 @@ export default function TopBar({ onUpload, isUploading }) {
 
         <Link
           to="/goals"
+          id="tour-goals"
           className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
         >
           <Target size={16} strokeWidth={1.75} />
@@ -57,6 +58,7 @@ export default function TopBar({ onUpload, isUploading }) {
         <button
           onClick={() => !isUploading && fileRef.current?.click()}
           disabled={isUploading}
+          id="tour-upload"
           className={`flex items-center gap-2 rounded-lg border px-3.5 py-1.5 text-sm font-medium transition-all ${
             isUploading 
               ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 opacity-50 cursor-not-allowed text-slate-500 dark:text-slate-400' 
@@ -74,11 +76,12 @@ export default function TopBar({ onUpload, isUploading }) {
       <input
         ref={fileRef}
         type="file"
+        multiple
         accept=".csv,.xlsx,.xls,image/*"
         className="hidden"
         onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) onUpload(file)
+          const files = Array.from(e.target.files || [])
+          if (files.length > 0) onUpload(files)
           e.target.value = ''
         }}
       />

@@ -7,11 +7,21 @@ import * as mockApi from '../mocks/api.js'
 
 // TODO: backend — POST /chat
 export async function sendMessage(text, history) {
+  let goals = []
+  try {
+    const saved = localStorage.getItem('user_goals')
+    if (saved) {
+      goals = JSON.parse(saved)
+    }
+  } catch (e) {
+    console.error("Error loading goals for chat context", e)
+  }
+
   if (USE_MOCKS) return mockApi.sendMessage(text, history)
   const res = await fetch('http://127.0.0.1:8000/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: text, history }),
+    body: JSON.stringify({ message: text, history, goals }),
   })
   return res.json()
 }
@@ -22,13 +32,24 @@ export function getDashboardData() {
   return mockApi.getDashboardData()
 }
 
-export async function uploadData(file) {
-  // 1. Determine if it's an image (for Gemma Vision OCR) or a CSV
-  const isImage = file.type.startsWith('image/')
+export async function uploadData(fileOrFiles) {
+  const files = Array.isArray(fileOrFiles) ? fileOrFiles : [fileOrFiles]
+  if (files.length === 0) throw new Error("No files provided")
+
+  // 1. Determine if it's an image (for Gemma Vision OCR) or CSVs
+  const isImage = files[0].type.startsWith('image/')
   const endpoint = isImage ? 'http://127.0.0.1:8000/extract' : 'http://127.0.0.1:8000/analyze'
 
   const formData = new FormData()
-  formData.append('file', file)
+  if (isImage) {
+    formData.append('file', files[0])
+  } else {
+    // For /analyze which now accepts a list of files
+    files.forEach(file => {
+      formData.append('files', file)
+    })
+  }
+
   const response = await fetch(endpoint, {
     method: 'POST',
     body: formData

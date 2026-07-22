@@ -81,13 +81,14 @@ export default function Composer({ onSend, disabled }) {
         <input
           ref={fileRef}
           type="file"
+          multiple
           accept=".csv,.xlsx,.xls,image/*"
           className="hidden"
           onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (file) {
-              // Directly trigger upload via onSend with null text and file as attachment
-              onSend('', file)
+            const files = Array.from(e.target.files || [])
+            if (files.length > 0) {
+              // Directly trigger upload via onSend with null text and files as attachment
+              onSend('', files)
             }
             e.target.value = ''
           }}

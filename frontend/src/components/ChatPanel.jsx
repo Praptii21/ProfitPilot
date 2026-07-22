@@ -1,13 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Sparkles, Maximize2, Minimize2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Sparkles, Maximize2, Minimize2, History, Plus } from 'lucide-react'
 import MessageBubble from './MessageBubble.jsx'
 import Composer from './Composer.jsx'
 import SuggestedQuestions from './chat/SuggestedQuestions.jsx'
 import AIStatusPanel from './chat/AIStatusPanel.jsx'
+import ChatHistory from './chat/ChatHistory.jsx'
 
-export default function ChatPanel({ messages, thinking, onSend, expanded, onToggleExpand }) {
+export default function ChatPanel({
+  messages,
+  thinking,
+  onSend,
+  expanded,
+  onToggleExpand,
+  sessions,
+  currentSessionId,
+  onLoadSession,
+  onNewSession,
+  onDeleteSession
+}) {
   const listRef = useRef(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   // Get latest assistant message for suggestions
   const latestAssistant = [...messages].reverse().find((m) => m.role === 'assistant')
@@ -18,7 +31,7 @@ export default function ChatPanel({ messages, thinking, onSend, expanded, onTogg
   }, [messages, thinking])
 
   return (
-    <section className="flex h-full min-h-0 flex-col border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+    <section className="flex h-full min-h-0 flex-col border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 relative">
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3">
         <div className="flex items-center gap-3">
@@ -33,6 +46,22 @@ export default function ChatPanel({ messages, thinking, onSend, expanded, onTogg
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setHistoryOpen(!historyOpen)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-600 transition-colors"
+            aria-label="Chat history"
+            title="Chat history"
+          >
+            <History size={14} />
+          </button>
+          <button
+            onClick={onNewSession}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-600 transition-colors"
+            aria-label="New chat"
+            title="New chat"
+          >
+            <Plus size={14} />
+          </button>
           <span className="flex items-center gap-1.5 rounded-full border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             Live
@@ -77,6 +106,21 @@ export default function ChatPanel({ messages, thinking, onSend, expanded, onTogg
 
       {/* Composer */}
       <Composer onSend={onSend} disabled={thinking} />
+
+      {/* History Slide-out Panel */}
+      <AnimatePresence>
+        {historyOpen && (
+          <ChatHistory
+            isOpen={historyOpen}
+            onClose={() => setHistoryOpen(false)}
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+            onLoadSession={onLoadSession}
+            onNewSession={onNewSession}
+            onDeleteSession={onDeleteSession}
+          />
+        )}
+      </AnimatePresence>
     </section>
   )
 }
