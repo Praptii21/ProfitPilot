@@ -56,18 +56,18 @@ flowchart TD
 
 ### Visual Interface Reference
 
-| **Landing & Target Configuration** | **Performance Metrics Dashboard** |
+| **Dashboard Analytics** | **Chatbot** |
 |:---:|:---:|
 | <img src="https://github.com/user-attachments/assets/36acb957-2146-4eed-9bd6-b11830624fea" width="100%" style="border-radius: 8px; border: 1px solid #eaecef;" /> | <img src="https://github.com/user-attachments/assets/e2f03eff-a46b-45b7-b09e-90998aae344d" width="100%" style="border-radius: 8px; border: 1px solid #eaecef;" /> |
-| *Landing Route & Goals configuration panel.* | *KPI Analytics widgets and diagnostic charts.* |
+| *Key performance indicators, sales charts, and leakage margins.* | *Conversational advisor workspace with real-time status steps.* |
 
-| **Workspace Layout & Resizer Slider** | **Integrated Advisor Ingestion & Chat** |
+| **Goals** | **What-If Simulator** |
 |:---:|:---:|
 | <img src="https://github.com/user-attachments/assets/6e58ba9a-9e79-4d30-8d72-326e67ceef71" width="100%" style="border-radius: 8px; border: 1px solid #eaecef;" /> | <img src="https://github.com/user-attachments/assets/4d6dfdca-c1e2-47e0-b0fe-751be2e0794c" width="100%" style="border-radius: 8px; border: 1px solid #eaecef;" /> |
-| *Split-screen configuration showing resizer handle.* | *Conversational interface showing OCR document upload.* |
+| *Form setting deadlines and values with visual progress tracking.* | *Business pricing adjustments simulation slider interface.* |
 
 <p align="center">
-  <b>Onboarding Walkthrough & Spotlight Highlight Focus</b><br>
+  <b>Chat History</b><br>
   <img src="https://github.com/user-attachments/assets/c290d60e-5206-4e15-b16e-9d2970a21155" width="55%" style="border-radius: 8px; border: 1px solid #eaecef; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
 </p>
 
