@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ========== Design System ========== */
 :root {
@@ -103,4 +104,13 @@ body {
 @keyframes draw-line {
   from { height: 0; }
   to { height: 100%; }
+}
+
+/* ========== Print Styles ========== */
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+  }
 }

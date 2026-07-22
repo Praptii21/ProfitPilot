@@ -30,14 +30,12 @@ export const SEED_SUGGESTIONS = [
 // Proactive greeting — same response shape as POST /chat, rendered on load.
 export const greeting = {
   reply:
-    "Hello! I've finished reviewing your June ledger for ABC Retail. Revenue grew 12% to ₹12.0L — good news. But profit slipped to ₹1.85L, and your margin is down from 18% to 15.4%. I found 3 places where money is leaking, worth about ₹1.2L per month. Want me to walk you through the biggest one?",
+    "Hello! I am your AI Business Advisor. To get started, please upload your transaction details or ledger data using the 'Upload Data' button above. Once uploaded, I can help you analyze revenue, identify profit leaks, and optimize your business strategy.",
   steps: [
-    { icon: 'file', text: 'reading ledger_june_2026.csv' },
-    { icon: 'function', text: 'calling find_profit_leaks() → 3 results' },
-    { icon: 'chart', text: 'computing monthly health score → 78/100' },
+    { icon: 'sparkles', text: 'waiting for data upload' }
   ],
   evidence: null,
-  suggestions: SEED_SUGGESTIONS,
+  suggestions: ['How do I upload data?', 'What kind of files are supported?', 'What can you analyze?'],
   actions: [],
 }
 
@@ -174,6 +172,67 @@ export async function sendMessage(text, history) {
 // ============ Dashboard Mock Data ============
 
 export function getDashboardData() {
+  // Read custom goals from localStorage
+  let userGoals = []
+  try {
+    const saved = localStorage.getItem('user_goals')
+    if (saved) {
+      userGoals = JSON.parse(saved)
+    }
+  } catch (e) {
+    console.error(e)
+  }
+
+    // Base mock recommendations (derived from mock data)
+  const baseRecommendations = [
+    {
+      title: 'Reduce Product A discount from 22% to 10%',
+      priority: 'high',
+      reason: 'Product A moves at high volume, but the 22% discount destroys its contribution margin.',
+      confidence: 85,
+      estimatedRecovery: '₹22,000/mo',
+    },
+    {
+      title: 'Enforce payment terms with Customer XYZ',
+      priority: 'high',
+      reason: 'Customer XYZ consistently pays 45 days late, acting as an interest-free loan at your expense.',
+      confidence: 82,
+      estimatedRecovery: '₹48,500 cashflow',
+    },
+    {
+      title: 'Review pricing on low-margin products',
+      priority: 'medium',
+      reason: 'Products with <15% margin are dragging overall profitability down as operating costs rise.',
+      confidence: 72,
+      estimatedRecovery: '₹15,000/mo',
+    },
+  ]
+
+  let recommendations = [...baseRecommendations]
+
+  // Map user goals to real recommendations to make them actionable
+  if (userGoals.length > 0) {
+    const primaryGoal = userGoals[0]
+    const formattedDate = new Date(primaryGoal.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    
+    // Take the highest priority recommendation and tie it to the goal
+    recommendations[0] = {
+      ...recommendations[0],
+      isGoal: true,
+      reason: `To reach your goal of "${primaryGoal.title}" by ${formattedDate}: ${recommendations[0].reason}`
+    }
+
+    if (userGoals.length > 1 && recommendations.length > 1) {
+       const secondaryGoal = userGoals[1]
+       const formattedDate2 = new Date(secondaryGoal.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+       recommendations[1] = {
+         ...recommendations[1],
+         isGoal: true,
+         reason: `To reach your goal of "${secondaryGoal.title}" by ${formattedDate2}: ${recommendations[1].reason}`
+       }
+    }
+  }
+
   return {
     cards: {
       revenue: {
@@ -239,29 +298,7 @@ export function getDashboardData() {
         { month: 'Sep', historical: null, predicted: 2.30 },
       ],
     },
-    recommendations: [
-      {
-        title: 'Reduce Product A discount from 22% to 10%',
-        priority: 'high',
-        reason: 'Product A moves at high volume, but the 22% discount destroys its contribution margin.',
-        confidence: 85,
-        estimatedRecovery: '₹22,000/mo',
-      },
-      {
-        title: 'Enforce payment terms with Customer XYZ',
-        priority: 'high',
-        reason: 'Customer XYZ consistently pays 45 days late, acting as an interest-free loan at your expense.',
-        confidence: 82,
-        estimatedRecovery: '₹48,500 cashflow',
-      },
-      {
-        title: 'Review pricing on low-margin products',
-        priority: 'medium',
-        reason: 'Products with <15% margin are dragging overall profitability down as operating costs rise.',
-        confidence: 72,
-        estimatedRecovery: '₹15,000/mo',
-      },
-    ],
+    recommendations,
   }
 }
 

@@ -4,7 +4,6 @@ import { Mic, Paperclip, ArrowUp, X, FileText } from 'lucide-react'
 export default function Composer({ onSend, disabled }) {
   const [text, setText] = useState('')
   const [listening, setListening] = useState(false)
-  const [attachment, setAttachment] = useState(null)
   const fileRef = useRef(null)
   const recognitionRef = useRef(null)
 
@@ -45,36 +44,16 @@ export default function Composer({ onSend, disabled }) {
     setListening(true)
   }
 
-  function onUpload(file) {
-    setAttachment(file)
-  }
-
   function submit() {
     const trimmed = text.trim()
     if (!trimmed || disabled) return
-    onSend(trimmed, attachment)
+    onSend(trimmed)
     setText('')
-    setAttachment(null)
   }
 
   return (
     <div className="shrink-0 border-t border-slate-200 bg-white px-4 py-3">
-      {/* Attachment chip */}
-      {attachment && (
-        <div className="mb-2 flex">
-          <span className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 py-1 pr-1.5 pl-2.5 text-xs text-slate-600">
-            <FileText size={12} strokeWidth={1.75} />
-            {attachment.name}
-            <button
-              onClick={() => setAttachment(null)}
-              className="rounded-full p-0.5 hover:bg-slate-200"
-              aria-label="Remove attachment"
-            >
-              <X size={12} />
-            </button>
-          </span>
-        </div>
-      )}
+
 
       {/* Input row */}
       <div className="flex items-center gap-2">
@@ -102,11 +81,14 @@ export default function Composer({ onSend, disabled }) {
         <input
           ref={fileRef}
           type="file"
-          accept=".csv,.xlsx,.xls"
+          accept=".csv,.xlsx,.xls,image/*"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0]
-            if (file) onUpload(file)
+            if (file) {
+              // Directly trigger upload via onSend with null text and file as attachment
+              onSend('', file)
+            }
             e.target.value = ''
           }}
         />

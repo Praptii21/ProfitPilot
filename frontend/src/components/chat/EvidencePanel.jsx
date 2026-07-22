@@ -3,7 +3,7 @@ import { BookOpen, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
 
 export default function EvidencePanel({ evidence }) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
 
   if (!evidence) return null
 

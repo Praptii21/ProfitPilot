@@ -58,7 +58,7 @@ class GemmaAgent:
         # Get the singleton RAG engine
         self.rag = get_rag_engine()
 
-    def generate_response(self, user_message: str, chat_history: list = None) -> dict:
+    def generate_response(self, user_message: str, chat_history: list = None, ml_context: str = None) -> dict:
         """
         Coordinates the RAG retrieval and calls the Gemma model to generate a response.
         Returns the parsed JSON response matching the frontend contract.
@@ -87,9 +87,10 @@ class GemmaAgent:
             }
         else:
             rag_context = "RAG Context: No relevant documents found."
-
-        # 2. Get ML Context (Mocked for now, teammate will connect real ml_engine later)
-        ml_context = "ML Context: \n- Revenue: ₹12,04,500\n- Margin: 15.4%\n- Profit Leak detected in Product A discounts."
+            
+        # 2. Use the live ML Context passed from main.py
+        if not ml_context:
+            ml_context = "ML Context: No data uploaded yet."
         
         # 3. Construct the prompt
         full_prompt = f"{user_message}\n\n====================\n{rag_context}\n====================\n{ml_context}"
