@@ -2,19 +2,20 @@
 
 ProfitPilot is an artificial intelligence-powered financial intelligence platform that transforms raw ledger images and transaction data into structured business insights. By integrating multimodal document extraction with traditional machine learning models, the platform detects financial anomalies, forecasts net profits, and answers conversational queries based on historical business performance.
 
-[![React](https://img.shields.io/badge/React-19.0-blue?style=flat-square&logo=react)](https://react.dev)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-green?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3.0-orange?style=flat-square&logo=scikit-learn)](https://scikit-learn.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-blueviolet?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
+[![Google Gemma](https://img.shields.io/badge/Google%20Gemma-Multimodal%20AI-blue?style=flat-square&logo=google)](https://ai.google.dev/gemma)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML%20Modeling-orange?style=flat-square&logo=scikit-learn)](https://scikit-learn.org/)
+[![FAISS Vector DB](https://img.shields.io/badge/FAISS-Vector%20Database-green?style=flat-square)](https://github.com/facebookresearch/faiss)
+[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-Embeddings-yellow?style=flat-square)](https://huggingface.co/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-ML%20API-darkgreen?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
 
 ---
 
 ## Key Features
 
-* **Intelligent Document Extraction**: Automatically processes photographs or scans of invoices and handwritten ledger logs to isolate tabular transaction parameters (dates, customers, products, revenue, costs, discounts, payment cycles).
+* **Intelligent Document Ingestion (OCR)**: Automatically processes photographs or scans of invoices and handwritten ledger logs to isolate tabular transaction parameters (dates, customers, products, revenue, costs, discounts, payment cycles) using multimodal vision analysis.
 * **Multi-File Sequential Merging**: Allows uploading mixed batches of CSV files and images simultaneously. The ingestion pipeline normalizes schemas and combines the rows into a single target dataset for holistic analysis.
 * **Automated Diagnostics**: Runs statistical modeling to surface profit leakages, customer concentration risks, and payment delays immediately upon ingestion.
-* **Conversational Context Memory**: An integrated advisor chat interface that remembers active business goals, margins, and leakages, tailoring explanations and answering queries contextually.
+* **Conversational Context Memory (RAG)**: An integrated advisor chat interface that remembers active business goals, margins, and leakages, retrieving semantic grounding data to answer queries contextually.
 * **Interactive What-If Simulation**: Enables simulating the impact of price adjustments and discount policy changes on revenue and profit margins using real-time sliders.
 * **Flexible Panel Resizing**: A draggable divider separates the analytical dashboard and the conversational assistant, allowing users to customize their visual workspaces.
 * **Structured PDF Reports**: Generates formal executive business summaries detailing KPIs and strategic action points via print styles.
@@ -23,12 +24,11 @@ ProfitPilot is an artificial intelligence-powered financial intelligence platfor
 
 ## Technology Stack
 
-* **React (Vite)**: Chosen for its virtual DOM rendering, enabling real-time dashboard updates, coupled with Vite's quick module reloading for rapid development.
-* **FastAPI**: Selected to host the backend due to its high asynchronous performance, automatic OpenAPI documentation, and seamless integration with Pydantic for payload validation.
-* **Scikit-Learn**: Utilized to implement regression and anomaly detection algorithms without the memory footprint of heavy deep-learning frameworks.
-* **Tailwind CSS**: Used to compile a responsive design system, providing dark mode support and custom transition parameters natively.
-* **Framer Motion**: Integrated to enable fluid layout animations when resizing chat panels or shifting routes.
-* **Recharts**: Employed to render responsive financial graphs that synchronize with state updates.
+* **Google GenAI SDK (Multimodal OCR & Chat)**: Utilized to parse unstructured ledger images into structured transaction records with a multimodal vision model, and to host a conversational business advisor capable of reasoning.
+* **FAISS (Facebook AI Similarity Search)**: Deployed as an in-memory vector database to store and perform similarity searches on chunked financial textbooks and standard operating procedures.
+* **Hugging Face (Sentence Transformers)**: Used to generate dense vector embeddings for documents indexed in the FAISS vector database to support precise Retrieval-Augmented Generation (RAG).
+* **Scikit-Learn (Anomaly Detection & Regression)**: Leveraged for the core machine learning models, deploying Isolation Forests to isolate pricing leakages and Random Forest Regressors to predict upcoming profit trends.
+* **Python & FastAPI**: Selected to build the async backend, enabling fast parallel calculations and offering native support for standard data science libraries (Pandas, NumPy, Scikit-Learn).
 
 ---
 
