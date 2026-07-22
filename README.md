@@ -56,13 +56,20 @@ flowchart TD
 
 ### Visual Interface Reference
 
-```
-[ Placeholder for Dashboard Layout Screenshot ]
-```
+<img width="770" height="433" alt="image" src="https://github.com/user-attachments/assets/36acb957-2146-4eed-9bd6-b11830624fea" />
 
-```
-[ Placeholder for Chat Interface & Draggable Divider Screenshot ]
-```
+<img width="767" height="409" alt="image" src="https://github.com/user-attachments/assets/e2f03eff-a46b-45b7-b09e-90998aae344d" />
+
+<img width="959" height="438" alt="image" src="https://github.com/user-attachments/assets/6e58ba9a-9e79-4d30-8d72-326e67ceef71" />
+
+
+<img width="959" height="437" alt="image" src="https://github.com/user-attachments/assets/4d6dfdca-c1e2-47e0-b0fe-751be2e0794c" />
+
+
+
+<img width="433" height="403" alt="image" src="https://github.com/user-attachments/assets/c290d60e-5206-4e15-b16e-9d2970a21155" />
+
+
 
 ---
 
